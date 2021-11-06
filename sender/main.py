@@ -5,6 +5,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import requests
 
 def send_email():
     server = 'smtp.mail.ru'
@@ -37,24 +38,19 @@ def send_email():
     mail.quit()
 
 
-def sender(alarm_list):
-    random.shuffle(alarm_list)
-    choice = random.choice(alarm_list)
-    if choice:
-        try:
-            send_email()
-            print(f'email sended at {datetime.now()}')
-        except Exception as e:
-            print(e)
-            print(f'error while sending email at {datetime.now()}')
-    else:
-        print('now everything is ok')
-    return alarm_list
-
+def sender(rooms):
+    for k, v in rooms.items():
+        rooms[k] = random.randrange(20, 1300)
+    r = requests.post('https://httpbin.org/post', data=rooms)
 
 if __name__ == '__main__':
-    alarm_list = [0] * 900
-    alarm_list += ([1] * 100)
+    rooms = {
+        'Прихожая': 0,
+        'Кухня': 0,
+        'Гостиная': 0,
+        'Спальня': 0,
+        'Детская': 0,
+    }
     while True:
-        alarm_list = sender(alarm_list)
+        sender(rooms)
         sleep(60)
