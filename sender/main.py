@@ -1,56 +1,36 @@
 import random
 from time import sleep
 from datetime import datetime
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
 import requests
-
-def send_email():
-    server = 'smtp.mail.ru'
-    user = 'bojan.alarm@mail.ru'
-    password = 'НЕ СКАЖУ'
-
-    recipients = ['sk.schooldude@gmail.com']
-    sender = 'bojan.alarm@mail.ru'
-    subject = 'СИГНАЛИЗАЦИЯ'
-    text = f'У вас обнаружена подозрительная активность в {datetime.now()}'
-    html = '<html><head></head><body><p>' + text + '</p></body></html>'
-
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From'] = ' safe inside <' + sender + '>'
-    msg['To'] = ', '.join(recipients)
-    msg['Reply-To'] = sender
-    msg['Return-Path'] = sender
-    msg['X-Mailer'] = 'SAFE INSIDE'
-
-    part_text = MIMEText(text, 'plain')
-    part_html = MIMEText(html, 'html')
-
-    msg.attach(part_text)
-    msg.attach(part_html)
-
-    mail = smtplib.SMTP_SSL(server)
-    mail.login(user, password)
-    mail.sendmail(sender, recipients, msg.as_string())
-    mail.quit()
+import threading
 
 
-def sender(rooms):
-    for k, v in rooms.items():
-        rooms[k] = random.randrange(20, 1300)
-    r = requests.post('https://httpbin.org/post', data=rooms)
+def sender(room):
+    r = requests.post('http://127.0.0.1:8000/api/motion/create/', data={'room': room, 'motion': random.randrange(20, 1300)})
+    print(r.status_code)
+
 
 if __name__ == '__main__':
-    rooms = {
-        'Прихожая': 0,
-        'Кухня': 0,
-        'Гостиная': 0,
-        'Спальня': 0,
-        'Детская': 0,
-    }
+    rooms = [
+        'Прихожая',
+        'Кухня',
+        'Гостиная',
+        'Спальня',
+        'Детская',
+    ]
     while True:
-        sender(rooms)
+        # for room in rooms:
+        t1 = threading.Thread(target=sender, args=['Прихожая'])
+        t2 = threading.Thread(target=sender, args=['Кухня'])
+        t3 = threading.Thread(target=sender, args=['Гостиная'])
+        t4 = threading.Thread(target=sender, args=['Спальня'])
+        t5 = threading.Thread(target=sender, args=['Детская'])
+
+        t1.start()
+        t2.start()
+        t3.start()
+        t4.start()
+        t5.start()
+        # t.join()
+        # sender(rooms)
         sleep(60)

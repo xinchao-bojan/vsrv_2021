@@ -1,7 +1,7 @@
 from django.utils.timezone import make_aware
 from rest_framework.views import APIView
 from rest_framework import status
-from .serializers import RoomSerializerInput, MotionDataSerializerInput, MotionDataSerializer, RoomSerializer
+from .serializers import MotionDataSerializerInput, MotionDataSerializer, RoomSerializer
 from .models import Room, MotionData
 from rest_framework.response import Response
 from dateutil.parser import parse
@@ -13,7 +13,7 @@ class CreateMotionData(APIView):
     def post(self, request):
         serializer = MotionDataSerializerInput(data=request.data)
         if serializer.is_valid():
-            instance = serializer.save()
+            instance = serializer.save(room=Room.objects.get(title=request.data['room']))
             if instance.need_to_alarm():
                 send_mail(
                     'СИГНАЛИЗАЦИЯ',
@@ -34,7 +34,7 @@ class GetMotionDataByRoom(APIView):
         if request.GET.get('date_end', None) is not None:
             date_end = make_aware(parse(request.GET.get('date_end', None), dayfirst=True))
             date_query &= Q(date__date__lte=date_end.date())
-        serializer = MotionDataSerializer(MotionData.objects.filter(Q(room__id=room_id) & date_query).order_by('date'),
+        serializer = MotionDataSerializer(MotionData.objects.filter(Q(room__id=room_id) & date_query).order_by('-date'),
                                           context={'request': request}, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
