@@ -19,7 +19,6 @@ if __name__ == '__main__':
         'Детская',
     ]
     while True:
-        # for room in rooms:
         t1 = threading.Thread(target=sender, args=['Прихожая'])
         t2 = threading.Thread(target=sender, args=['Кухня'])
         t3 = threading.Thread(target=sender, args=['Гостиная'])
@@ -31,6 +30,4 @@ if __name__ == '__main__':
         t3.start()
         t4.start()
         t5.start()
-        # t.join()
-        # sender(rooms)
         sleep(60)

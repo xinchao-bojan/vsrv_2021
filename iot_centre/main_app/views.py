@@ -13,7 +13,11 @@ class CreateMotionData(APIView):
     def post(self, request):
         serializer = MotionDataSerializerInput(data=request.data)
         if serializer.is_valid():
-            instance = serializer.save(room=Room.objects.get(title=request.data['room']))
+            try:
+                instance = serializer.save(room=Room.objects.get(title=request.data['room']))
+            except Room.DoesNotExist:
+                return Response('Такой комнаты нет',status=status.HTTP_400_BAD_REQUEST)
+
             if instance.need_to_alarm():
                 send_mail(
                     'СИГНАЛИЗАЦИЯ',
